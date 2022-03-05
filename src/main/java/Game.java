@@ -8,7 +8,7 @@ public class Game {
 
     static char currentTurn = O;
 
-    private final char[][] gameBoard = new char[10][10];
+    private final char[][] gameBoard = new char[12][12];
 
     private final ArrayList<Placement> placed = new ArrayList<>();
 
@@ -29,6 +29,7 @@ public class Game {
             checkGameState();
 
             if (gameWon) {
+                printBoard();
                 if (currentTurn == O) {
                     System.out.println("O is the winner!");
                 } else {
@@ -41,14 +42,14 @@ public class Game {
     }
 
     private void printBoard() {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
+        for (int i = 1; i < 11; i++) {
+            for (int j = 1; j < 11; j++) {
                 if (gameBoard[i][j] == 0) {
-                    System.out.print(" ");
+                    System.out.print(" _ ");
                 } else {
-                    System.out.print(gameBoard[i][j]);
+                    System.out.print(" " + gameBoard[i][j] + " ");
                 }
-                if (i == 9) {
+                if (j == 10) {
                     System.out.println();
                 }
             }
@@ -77,13 +78,7 @@ public class Game {
     }
 
     private void computerTurn() {
-
-    }
-
-    private void checkGameState() {
-
-
-
+        System.out.println("computer takes a turn");
     }
 
     private void placeSymbol(int x, int y, char c) {
@@ -92,15 +87,139 @@ public class Game {
     }
 
     private boolean legalMove(int x, int y) {
-        if (x < 0 || x > 9 || y < 0 || y > 9) {
+        if (x < 1 || x > 10 || y < 1 || y > 10) {
             return false;
         } else if (gameBoard[x][y] != 0) {
             return false;
         } else return checkNeighbours(x, y);
     }
 
+    private void checkGameState() {
+
+        Placement lastMove = placed.get(placed.size() - 1);
+
+        gameWon = checkHorizontal(lastMove) || checkVertical(lastMove) || checkDiagonalLeft(lastMove) || checkDiagonalRight(lastMove);
+
+        if(!gameWon) {
+            boolean foundFreeSlot = false;
+            for(int i = 1; i < 11; i++) {
+                for(int j = 1; j < 11; j++) {
+                    if(gameBoard[i][j] == 0) {
+                        foundFreeSlot = true;
+                        break;
+                    }
+                }
+            }
+            gameDraw = !foundFreeSlot;
+        }
+    }
+
+    private boolean checkHorizontal(Placement lastMove) {
+        int foundSigns = 0;
+        boolean stopLeft = false, stopRight = false;
+
+        for(int i = 0; i < 5; i++) {
+
+            if(!stopRight) {
+                if(gameBoard[lastMove.x + i][lastMove.y] != lastMove.c) {
+                    stopRight = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+
+            if(!stopLeft) {
+                if(gameBoard[lastMove.x - i][lastMove.y] != lastMove.c) {
+                    stopLeft = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+        }
+
+        return foundSigns >= 5;
+    }
+
+    private boolean checkVertical(Placement lastMove) {
+        int foundSigns = 0;
+        boolean stopTop = false, stopBottom = false;
+
+        for(int i = 0; i < 5; i++) {
+
+            if(!stopBottom) {
+                if(gameBoard[lastMove.x][lastMove.y + i] != lastMove.c) {
+                    stopBottom = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+
+            if(!stopTop) {
+                if(gameBoard[lastMove.x][lastMove.y - i] != lastMove.c) {
+                    stopTop = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+        }
+
+        return foundSigns >= 5;
+    }
+
+    private boolean checkDiagonalRight(Placement lastMove) {
+        int foundSigns = 0;
+        boolean stopLeft = false, stopRight = false;
+
+        for(int i = 0; i < 5; i++) {
+
+            if(!stopRight) {
+                if(gameBoard[lastMove.x + i][lastMove.y + i] != lastMove.c) {
+                    stopRight = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+
+            if(!stopLeft) {
+                if(gameBoard[lastMove.x - i][lastMove.y - i] != lastMove.c) {
+                    stopLeft = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+        }
+
+        return foundSigns >= 5;
+    }
+
+    private boolean checkDiagonalLeft(Placement lastMove) {
+        int foundSigns = 0;
+        boolean stopLeft = false, stopRight = false;
+
+        for(int i = 0; i < 5; i++) {
+
+            if(!stopRight) {
+                if(gameBoard[lastMove.x + i][lastMove.y - i] != lastMove.c) {
+                    stopRight = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+
+            if(!stopLeft) {
+                if(gameBoard[lastMove.x - i][lastMove.y + i] != lastMove.c) {
+                    stopLeft = true;
+                } else {
+                    foundSigns++;
+                }
+            }
+        }
+
+        return foundSigns >= 5;
+    }
+
     /**
-     * Father forgive me, for I have sinned
+     * Father has forgiven me
      *
      * @param x Nodens x-koordinat
      * @param y Nodens y-koordinat
@@ -108,30 +227,14 @@ public class Game {
      * @return The state of suffering
      */
     private boolean checkNeighbours(int x, int y) {
-        if (x != 0 && x != 9 && y != 0 && y != 9) {
-            return gameBoard[x + 1][y] != 0 || gameBoard[x - 1][y] != 0 || gameBoard[x][y + 1] != 0 || gameBoard[x][y - 1] != 0 ||
-                    gameBoard[x + 1][y + 1] != 0 || gameBoard[x - 1][y + 1] != 0 || gameBoard[x - 1][y - 1] != 0 || gameBoard[x + 1][y - 1] != 0;
-        } else if (x == 0 && y == 0) {
-            return gameBoard[x + 1][y] != 0 || gameBoard[x][y + 1] != 0 || gameBoard[x + 1][y + 1] != 0;
-        } else if (x == 0 && y == 9) {
-            return gameBoard[x + 1][y] != 0 || gameBoard[x][y - 1] != 0 || gameBoard[x + 1][y - 1] != 0;
-        } else if (x == 9 && y == 0) {
-            return gameBoard[x - 1][y] != 0 || gameBoard[x][y + 1] != 0 || gameBoard[x - 1][y + 1] != 0;
-        } else if (x == 9 && y == 9) {
-            return gameBoard[x - 1][y] != 0 || gameBoard[x][y - 1] != 0 || gameBoard[x - 1][y - 1] != 0;
-        } else if (x == 0) {
-            return gameBoard[x + 1][y] != 0 || gameBoard[x][y + 1] != 0 || gameBoard[x][y - 1] != 0 ||
-                    gameBoard[x + 1][y + 1] != 0 || gameBoard[x + 1][y - 1] != 0;
-        } else if (x == 9) {
-            return gameBoard[x - 1][y] != 0 || gameBoard[x][y + 1] != 0 || gameBoard[x][y - 1] != 0 ||
-                    gameBoard[x - 1][y + 1] != 0 || gameBoard[x - 1][y - 1] != 0;
-        } else if (y == 0) {
-            return gameBoard[x + 1][y] != 0 || gameBoard[x - 1][y] != 0 || gameBoard[x][y + 1] != 0 ||
-                    gameBoard[x + 1][y + 1] != 0 || gameBoard[x - 1][y + 1] != 0;
-        } else { //y == 9
-            return gameBoard[x + 1][y] != 0 || gameBoard[x - 1][y] != 0 || gameBoard[x][y - 1] != 0 ||
-                    gameBoard[x - 1][y - 1] != 0 || gameBoard[x + 1][y - 1] != 0;
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1; j <= 1; j++) {
+                if(gameBoard[x+i][y+j] != 0) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
 
     private static class Placement {
