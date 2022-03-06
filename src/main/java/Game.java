@@ -11,7 +11,8 @@ public class Game {
 
     private final char[][] gameBoard = new char[12][12];
 
-    private final ArrayList<Placement> placed = new ArrayList<>();
+    private final HashSet<Placement> placed = new HashSet<>();
+    Placement lastMove;
 
     boolean gameWon;
     boolean gameDraw;
@@ -48,7 +49,7 @@ public class Game {
                 if (gameBoard[j][i] == 0) {
                     System.out.print(" _ ");
                 } else {
-                    System.out.print(" " + gameBoard[i][j] + " ");
+                    System.out.print(" " + gameBoard[j][i] + " ");
                 }
                 if (j == 10) {
                     System.out.println();
@@ -78,7 +79,8 @@ public class Game {
         } while (!legalMove);
     }
 
-   /* private void computerTurn() {
+    //TODO skriv färdigt
+    private void computerTurn() {
         System.out.println("computer takes a turn");
         int responseValue;
         int value;
@@ -86,21 +88,42 @@ public class Game {
         Move winningMove;
 
         value = - 1;
-        for(int i = 1; i < 11; i++){
-            if(legalMove())
+        for(Placement p : findMoves()){
+            mockPlaceSymbol(p);
+            //TODO find human move
+            unPlaceSymbol(p);
         }
 
-    }  */
+    }
 
-    /*private HashSet<Placement> findMoves(){
+    private HashSet<Placement> findMoves(){
+        HashSet<Placement> possibleMoves = new HashSet<>();
         for(Placement p: placed){
-
+            for(int i = -1; i <= 1; i++) {
+                for(int j = -1; j <= 1; j++) {
+                    if(gameBoard[p.x+i][p.y+j] == 0 && p.x > 0 && p.x < 12 && p.y > 0 && p.y < 12) {
+                        possibleMoves.add(new Placement(p.x+i, p.y+j, X));
+                    }
+                }
+            }
         }
-    } */
+        return possibleMoves;
+    }
 
     private void placeSymbol(int x, int y, char c) {
         gameBoard[x][y] = c;
-        placed.add(new Placement(x, y, c));
+        lastMove = new Placement(x, y, c);
+        placed.add(lastMove);
+    }
+
+    private void mockPlaceSymbol(Placement p) {
+        gameBoard[p.x][p.y] = p.c;
+        placed.add(p);
+    }
+
+    private void unPlaceSymbol(Placement p) {
+        gameBoard[p.x][p.y] = 0;
+        placed.remove(p);
     }
 
     private boolean legalMove(int x, int y) {
@@ -112,8 +135,6 @@ public class Game {
     }
 
     private void checkGameState() {
-
-        Placement lastMove = placed.get(placed.size() - 1);
 
         gameWon = checkHorizontal(lastMove) || checkVertical(lastMove) || checkDiagonalLeft(lastMove) || checkDiagonalRight(lastMove);
 
@@ -154,7 +175,7 @@ public class Game {
             }
         }
 
-        return foundSigns >= 5;
+        return foundSigns >= 6;
     }
 
     private boolean checkVertical(Placement lastMove) {
@@ -180,7 +201,7 @@ public class Game {
             }
         }
 
-        return foundSigns >= 5;
+        return foundSigns >= 6;
     }
 
     private boolean checkDiagonalRight(Placement lastMove) {
@@ -206,7 +227,7 @@ public class Game {
             }
         }
 
-        return foundSigns >= 5;
+        return foundSigns >= 6;
     }
 
     private boolean checkDiagonalLeft(Placement lastMove) {
@@ -232,7 +253,7 @@ public class Game {
             }
         }
 
-        return foundSigns >= 5;
+        return foundSigns >= 6;
     }
 
     /**
