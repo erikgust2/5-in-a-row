@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
 
 public class Game {
@@ -23,7 +24,7 @@ public class Game {
             if (currentTurn == O) {
                 playerTurn();
             } else {
-                computerTurn();
+                //computerTurn();
             }
 
             checkGameState();
@@ -44,7 +45,7 @@ public class Game {
     private void printBoard() {
         for (int i = 1; i < 11; i++) {
             for (int j = 1; j < 11; j++) {
-                if (gameBoard[i][j] == 0) {
+                if (gameBoard[j][i] == 0) {
                     System.out.print(" _ ");
                 } else {
                     System.out.print(" " + gameBoard[i][j] + " ");
@@ -77,9 +78,25 @@ public class Game {
         } while (!legalMove);
     }
 
-    private void computerTurn() {
+   /* private void computerTurn() {
         System.out.println("computer takes a turn");
-    }
+        int responseValue;
+        int value;
+        int bestMove = 1;
+        Move winningMove;
+
+        value = - 1;
+        for(int i = 1; i < 11; i++){
+            if(legalMove())
+        }
+
+    }  */
+
+    /*private HashSet<Placement> findMoves(){
+        for(Placement p: placed){
+
+        }
+    } */
 
     private void placeSymbol(int x, int y, char c) {
         gameBoard[x][y] = c;
@@ -236,6 +253,7 @@ public class Game {
         }
         return false;
     }
+
 
     private static class Placement {
         int x, y;
