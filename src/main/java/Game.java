@@ -82,27 +82,48 @@ public class Game {
     //TODO skriv färdigt
     private void computerTurn() {
         System.out.println("computer takes a turn");
+        findComputerMove(-1,1);
+
+    }
+    private void findComputerMove(int alpha, int beta) {
         int responseValue;
         int value;
         int bestMove = 1;
         Move winningMove;
 
-        value = - 1;
-        for(Placement p : findMoves()){
+        value = alpha;
+        for(Placement p : findMoves(X)){
             mockPlaceSymbol(p);
             //TODO find human move
+            findHumanMove(value, beta);
+            unPlaceSymbol(p);
+        }
+
+    }
+    private void findHumanMove(int alpha, int beta) {
+        int responseValue;
+        int value;
+        int bestMove = 1;
+        Move winningMove;
+
+        value = alpha;
+        for(Placement p : findMoves(O)){
+            mockPlaceSymbol(p);
+            //TODO find cp-move
+            findComputerMove(value, beta);
             unPlaceSymbol(p);
         }
 
     }
 
-    private HashSet<Placement> findMoves(){
+
+    private HashSet<Placement> findMoves(char chr){
         HashSet<Placement> possibleMoves = new HashSet<>();
         for(Placement p: placed){
             for(int i = -1; i <= 1; i++) {
                 for(int j = -1; j <= 1; j++) {
                     if(gameBoard[p.x+i][p.y+j] == 0 && p.x > 0 && p.x < 12 && p.y > 0 && p.y < 12) {
-                        possibleMoves.add(new Placement(p.x+i, p.y+j, X));
+                        possibleMoves.add(new Placement(p.x+i, p.y+j, chr));
                     }
                 }
             }
