@@ -13,6 +13,8 @@ public class Game {
 
     private final HashSet<Placement> placed = new HashSet<>();
     Placement lastMove;
+    Placement lastMockCPMove;
+    Placement lastMockMHMove;
 
     boolean gameWon;
     boolean gameDraw;
@@ -40,6 +42,7 @@ public class Game {
             } else if (gameDraw) {
                 System.out.println("The Game is a Draw!");
             }
+            changeTurn();
         }
     }
 
@@ -71,21 +74,21 @@ public class Game {
             y = scanner.nextInt();
 
             legalMove = legalMove(x, y);
-            if(!legalMove) {
+            if (!legalMove) {
                 System.out.println("Illegal move!");
             } else {
                 placeSymbol(x, y, O);
             }
         } while (!legalMove);
-        currentTurn = X;
+
     }
 
     //TODO skriv färdigt
     private void computerTurn() {
         System.out.println("computer takes a turn");
-        Placement bestMove = findComputerMove(6,-6, 0);
+        Placement bestMove = findComputerMove(6, -6, 0);
         placeSymbol(bestMove.x, bestMove.y, X);
-        currentTurn = O;
+
     }
 
     private Placement findComputerMove(int alpha, int beta, int counter) {
@@ -94,70 +97,74 @@ public class Game {
         int bestMoveX = 0;
         int bestMoveY = 0;
 
-        value = alpha;
-
-        for(Placement p : findMoves(X)) {
-            if(value < beta || counter > 3) {
-                break;
-            }
-            mockPlaceSymbol(p);
-            //TODO find human move
-            Placement response = findHumanMove(value, beta, counter++);
-            if(response != null) {
-                responseValue = response.value;
-            }
-            unPlaceSymbol(p);
-            if(responseValue >= value) {
-                value = responseValue;
-                bestMoveX = p.x;
-                bestMoveY = p.y;
-            }
-        }
-
-        if(bestMoveY == 0) {
-            return null;
-        } else {
+        if (lastMockCPMove != null && lastMockCPMove.value == 6) {
             return new Placement(bestMoveX, bestMoveY, X);
+        } else {
+
+            value = alpha;
+
+            for (Placement p : findMoves(X)) {
+                if (value < beta || counter > 10) {
+                    break;
+                }
+                mockPlaceSymbol(p);
+                lastMockCPMove = p;
+                //TODO find human move
+                Placement response = findHumanMove(value, beta, counter++);
+                responseValue = response.value;
+                unPlaceSymbol(p);
+                if (responseValue >= value) {
+                    value = responseValue;
+                    bestMoveX = p.x;
+                    bestMoveY = p.y;
+                }
+            }
         }
+
+        return new Placement(bestMoveX, bestMoveY, X);
     }
+
+
     private Placement findHumanMove(int alpha, int beta, int counter) {
         int responseValue = 6;
         int value;
         int bestMoveX = 0;
         int bestMoveY = 0;
 
-        value = beta;
-
-        ArrayList<Placement> possibleMoves = findMoves(O);
-
-        for(int i = 0; i < possibleMoves.size() && value < alpha && counter > 3; i++){
-            mockPlaceSymbol(possibleMoves.get(i));
-            //TODO find cp-move
-            Placement response = findComputerMove(alpha, value, counter++);
-            if(response != null) {
-                responseValue = response.value;
-            }
-            unPlaceSymbol(possibleMoves.get(i));
-            if(responseValue <= value) {
-                value = responseValue;
-                bestMoveX = possibleMoves.get(i).x;
-                bestMoveY = possibleMoves.get(i).y;
-            }
-        }
-        if(bestMoveY == 0) {
-            return null;
+        if (lastMockMHMove != null && lastMockMHMove.value == -6) {
+            return new Placement(bestMoveX, bestMoveY, X);
         } else {
+
+            value = beta;
+
+            ArrayList<Placement> possibleMoves = findMoves(O);
+
+            for (int i = 0; i < possibleMoves.size() && value < alpha && counter > 10; i++) {
+                mockPlaceSymbol(possibleMoves.get(i));
+                lastMockMHMove = possibleMoves.get(i);
+                //TODO find cp-move
+                Placement response = findComputerMove(alpha, value, counter++);
+                responseValue = response.value;
+                unPlaceSymbol(possibleMoves.get(i));
+                if (responseValue <= value) {
+                    value = responseValue;
+                    bestMoveX = possibleMoves.get(i).x;
+                    bestMoveY = possibleMoves.get(i).y;
+                }
+            }
+
             return new Placement(bestMoveX, bestMoveY, O);
         }
     }
 
-    private ArrayList<Placement> findMoves(char chr){
+
+    private ArrayList<Placement> findMoves(char chr) {
         ArrayList<Placement> possibleMoves = new ArrayList<>();
-        for(Placement p: placed){
-            for(int i = -1; i <= 1; i++) {
-                for(int j = -1; j <= 1; j++) {
-                    if(p.x > 0 && p.x < 11 && p.y > 0 && p.y < 11) {
-                        if(gameBoard[p.x+i][p.y+j] == 0) {
+        for (Placement p : placed) {
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (p.x > 0 && p.x < 11 && p.y > 0 && p.y < 11) {
+                        if (gameBoard[p.x + i][p.y + j] == 0) {
                             possibleMoves.add(new Placement(p.x + i, p.y + j, chr));
                         }
                     }
@@ -200,11 +207,11 @@ public class Game {
 
         gameWon = lastMove.value >= 6;
 
-        if(!gameWon) {
+        if (!gameWon) {
             boolean foundFreeSlot = false;
-            for(int i = 1; i < 11; i++) {
-                for(int j = 1; j < 11; j++) {
-                    if(gameBoard[i][j] == 0) {
+            for (int i = 1; i < 11; i++) {
+                for (int j = 1; j < 11; j++) {
+                    if (gameBoard[i][j] == 0) {
                         foundFreeSlot = true;
                         break;
                     }
@@ -218,25 +225,25 @@ public class Game {
         int foundSigns = 0;
         boolean stopLeft = false, stopRight = false;
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
 
-            if(!stopRight) {
-                if(gameBoard[lastMove.x + i][lastMove.y] != lastMove.c) {
+            if (!stopRight) {
+                if (lastMove.x + i > 11 || gameBoard[lastMove.x + i][lastMove.y] != lastMove.c) {
                     stopRight = true;
                 } else {
                     foundSigns++;
                 }
             }
 
-            if(!stopLeft) {
-                if(gameBoard[lastMove.x - i][lastMove.y] != lastMove.c) {
+            if (!stopLeft) {
+                if (lastMove.x - i < 0 || gameBoard[lastMove.x - i][lastMove.y] != lastMove.c) {
                     stopLeft = true;
                 } else {
                     foundSigns++;
                 }
             }
         }
-        if(lastMove.value < foundSigns) {
+        if (lastMove.value < foundSigns) {
             lastMove.value = foundSigns;
         }
     }
@@ -245,18 +252,18 @@ public class Game {
         int foundSigns = 0;
         boolean stopTop = false, stopBottom = false;
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
 
-            if(!stopBottom) {
-                if(gameBoard[lastMove.x][lastMove.y + i] != lastMove.c) {
+            if (!stopBottom) {
+                if (lastMove.y + i > 11 || gameBoard[lastMove.x][lastMove.y + i] != lastMove.c) {
                     stopBottom = true;
                 } else {
                     foundSigns++;
                 }
             }
 
-            if(!stopTop) {
-                if(gameBoard[lastMove.x][lastMove.y - i] != lastMove.c) {
+            if (!stopTop) {
+                if (lastMove.x - i < 0 || gameBoard[lastMove.x][lastMove.y - i] != lastMove.c) {
                     stopTop = true;
                 } else {
                     foundSigns++;
@@ -264,7 +271,7 @@ public class Game {
             }
         }
 
-        if(lastMove.value < foundSigns) {
+        if (lastMove.value < foundSigns) {
             lastMove.value = foundSigns;
         }
     }
@@ -273,18 +280,18 @@ public class Game {
         int foundSigns = 0;
         boolean stopLeft = false, stopRight = false;
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
 
-            if(!stopRight) {
-                if(gameBoard[lastMove.x + i][lastMove.y + i] != lastMove.c) {
+            if (!stopRight) {
+                if (lastMove.x + i > 11 || lastMove.y + i > 11 || gameBoard[lastMove.x + i][lastMove.y + i] != lastMove.c) {
                     stopRight = true;
                 } else {
                     foundSigns++;
                 }
             }
 
-            if(!stopLeft) {
-                if(gameBoard[lastMove.x - i][lastMove.y - i] != lastMove.c) {
+            if (!stopLeft) {
+                if (lastMove.x - i < 0 || lastMove.y - i < 0 || gameBoard[lastMove.x - i][lastMove.y - i] != lastMove.c) {
                     stopLeft = true;
                 } else {
                     foundSigns++;
@@ -292,7 +299,7 @@ public class Game {
             }
         }
 
-        if(lastMove.value < foundSigns) {
+        if (lastMove.value < foundSigns) {
             lastMove.value = foundSigns;
         }
     }
@@ -301,18 +308,18 @@ public class Game {
         int foundSigns = 0;
         boolean stopLeft = false, stopRight = false;
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
 
-            if(!stopRight) {
-                if(gameBoard[lastMove.x + i][lastMove.y - i] != lastMove.c) {
+            if (!stopRight) {
+                if (lastMove.x + i > 11 || lastMove.y - i < 0 || gameBoard[lastMove.x + i][lastMove.y - i] != lastMove.c) {
                     stopRight = true;
                 } else {
                     foundSigns++;
                 }
             }
 
-            if(!stopLeft) {
-                if(gameBoard[lastMove.x - i][lastMove.y + i] != lastMove.c) {
+            if (!stopLeft) {
+                if (lastMove.x - i < 0 || lastMove.y + i > 11 || gameBoard[lastMove.x - i][lastMove.y + i] != lastMove.c) {
                     stopLeft = true;
                 } else {
                     foundSigns++;
@@ -320,7 +327,7 @@ public class Game {
             }
         }
 
-        if(lastMove.value < foundSigns) {
+        if (lastMove.value < foundSigns) {
             lastMove.value = foundSigns;
         }
     }
@@ -330,18 +337,25 @@ public class Game {
      *
      * @param x Nodens x-koordinat
      * @param y Nodens y-koordinat
-     *
      * @return The state of suffering
      */
     private boolean checkNeighbours(int x, int y) {
-        for(int i = -1; i <= 1; i++) {
-            for(int j = -1; j <= 1; j++) {
-                if(gameBoard[x+i][y+j] != 0) {
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (gameBoard[x + i][y + j] != 0) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private void changeTurn(){
+        if(currentTurn == X){
+            currentTurn = O;
+        }else{
+            currentTurn = X;
+        }
     }
 
 
