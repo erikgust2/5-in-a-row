@@ -15,6 +15,7 @@ public class Game {
     Placement lastMove;
     Placement lastMockCPMove;
     Placement lastMockMHMove;
+    Placement bestPcMove;
 
     boolean gameWon;
     boolean gameDraw;
@@ -104,7 +105,7 @@ public class Game {
             value = alpha;
 
             for (Placement p : findMoves(X)) {
-                if (value < beta || counter > 10) {
+                if (value > beta || counter > 10) {
                     break;
                 }
                 mockPlaceSymbol(p);
@@ -114,6 +115,7 @@ public class Game {
                 responseValue = response.value;
                 unPlaceSymbol(p);
                 if (responseValue >= value) {
+                    bestPcMove = p;
                     value = responseValue;
                     bestMoveX = p.x;
                     bestMoveY = p.y;
